@@ -27,7 +27,7 @@ def hash_password(password: str) -> Tuple[str, str]: #return a tuple of salt_hex
         "sha256",              # Name of the hash function.
         password.encode("utf-8"),  # Password converted to bytes.
         salt,                  # The random salt.
-        100_000,               # Number of iterations (100k).
+        100_000,               # Number of iterations (100k), if number is larger it works slower.
     )
 
     # 3. Convert salt and hash to hex strings for storage.
