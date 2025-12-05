@@ -18,7 +18,7 @@ from auth import hash_password, verify_password  #reuse our password helpers; th
 # SQLite database URL. The file "chat.db" will be created in the project folder.
 DATABASE_URL = "sqlite:///chat.db" # Tells where is our database exist
 
-# Global SQLAlchemy engine object, similar to the examples in the lectures.
+# Global SQLAlchemy engine object that knows how to connnect to database, similar to the examples in the lectures.
 engine = create_engine(DATABASE_URL, echo=False)
 
 def init_db() -> None: #Doesn't return anything , just create tables
@@ -78,6 +78,7 @@ def create_user(username: str, password: str) -> bool: #Return True or False
     salt_hex, hash_hex = hash_password(password) 
 
     #Uses named parameters instead of putting them directly into the SQL string.
+    #SQLAlchemy sends the values separately, so user input cannot break the SQL.
     insert_sql = """
         INSERT INTO users (username, password_salt, password_hash)
         VALUES (:username, :salt, :hash)
@@ -93,6 +94,7 @@ def create_user(username: str, password: str) -> bool: #Return True or False
     except IntegrityError:
         # This happens if the username already exists due to the PRIMARY KEY constraint.
         return False
+        #iNSTEAD of crashing the program, we just return False
   
 
 

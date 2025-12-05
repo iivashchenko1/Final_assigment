@@ -28,7 +28,8 @@ PORT = 5000       # You can change this if you want to one port for all clients.
 clients: list[dict] = []  
 
 # A lock so that multiple threads can modify 'clients' safely.
-clients_lock = threading.Lock() # perevents race conditoins when several threads try to modify the clients list at the same time.
+clients_lock = threading.Lock() # perevents race conditoins when several threads try to modify the clients list at the same time, so like makes sure only one thread touches the list at once.
+
 
 def send_line(conn: socket.socket, text: str) -> None:
     """
@@ -168,9 +169,12 @@ def handle_client(conn: socket.socket, addr) -> None:
             broadcast_message(username, message)
 
     except Exception as exc:
-        # Any unexpected error: log it server-side.
+        
+        # Any unexpected error: log it server-side.    
         print(f"[ERROR] Exception in client handler for {addr}: {exc}")
+    
     finally:
+        
         # Remove client from global list if logged in.
         if username is not None:
             with clients_lock:
@@ -192,7 +196,9 @@ def main() -> None:
     init_db()
 
     # Create a TCP socket.
-    server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #We used TCP instead of UDP because TCP cares about correctness and guaranties that all data arrives in order.
+    #At the same time UDP is faster but it cxan lose some packets and the order of packets is not guaranteed.
+    server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #SOCK_STREAM proof of TCP and AF_INET is for IPv4 addresses.
 
     # Allow quick reuse of the same port after restarting the server.
     server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -209,7 +215,8 @@ def main() -> None:
             # Accept a new client connection.
             conn, addr = server_sock.accept()
 
-            # Start a new thread for this client.
+            # Start a new thread for each client.
+            #hat way, if one client is slow or waiting for input, others still work
             thread = threading.Thread(
                 target=handle_client,
                 args=(conn, addr),

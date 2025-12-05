@@ -51,6 +51,7 @@ def main() -> None:
     Connect to the chat server and start the send/receive loops.
     """
     # 1. Create a TCP socket.
+    #Same idea as in server.py , but now connnecting to server instead of listening for clients.
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
@@ -92,7 +93,7 @@ def main() -> None:
     finally:
         # Close the socket when done.
         try:
-            sock.close()
+            sock.close() # ask the OS to close the socket
         except OSError:
             pass
 
